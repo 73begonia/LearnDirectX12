@@ -24,3 +24,4 @@ group ""
 
 include "dx12_common"
 include "samples/1.getting_started/1.1.hello_window"
+include "samples/1.getting_started/2.1.hello_triangle"
