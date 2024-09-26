@@ -31,6 +31,23 @@
 
 extern const int gNumFrameResources;
 
+inline const char* ConvertWStringToChar(const std::wstring& wstr)
+{
+    // 获取转换后的长度
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), NULL, 0, NULL, NULL);
+
+    // 分配足够的缓冲区
+    char* strTo = new char[size_needed + 1];
+
+    // 执行转换
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), strTo, size_needed, NULL, NULL);
+
+    // 添加终止符
+    strTo[size_needed] = '\0';
+
+    return strTo;
+}
+
 inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
 {
     if(obj)
@@ -261,17 +278,6 @@ struct Material
 	DirectX::XMFLOAT3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
 	float Roughness = .25f;
 	DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
-};
-
-struct Texture
-{
-	// Unique material name for lookup.
-	std::string Name;
-
-	std::wstring Filename;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
 };
 
 #ifndef ThrowIfFailed

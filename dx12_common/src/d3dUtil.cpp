@@ -44,6 +44,8 @@ Microsoft::WRL::ComPtr<ID3D12Resource> d3dUtil::CreateDefaultBuffer(
 {
     ComPtr<ID3D12Resource> defaultBuffer;
 
+    HRESULT hr = device->GetDeviceRemovedReason();
+
     // Create the actual default buffer resource.
     ThrowIfFailed(device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),

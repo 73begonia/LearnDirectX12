@@ -20,7 +20,13 @@ project "dx12_common"
 
 		includedirs
 		{
-			"src"
+			"src",
+			"%{IncludeDir.DirectXTex}"
+		}
+
+		links
+		{
+			"DirectXTex"
 		}
 
 		filter "system:windows"
