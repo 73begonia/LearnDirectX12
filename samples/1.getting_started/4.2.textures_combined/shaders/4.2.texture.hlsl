@@ -1,4 +1,5 @@
-Texture2D containerTex : register(t0);
+Texture2D awesomefaceTex : register(t0);
+Texture2D containerTex : register(t1);
 
 SamplerState gsamLinear : register(s0);
 
@@ -25,8 +26,8 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    return containerTex.Sample(gsamLinear, pin.TexC);
-    //return lerp(containerTex.Sample(gsamLinear, pin.TexC), containerTex.Sample(gsamLinear, pin.TexC), 0.2);
+    //return containerTex.Sample(gsamLinear, pin.TexC);
+    return lerp(containerTex.Sample(gsamLinear, pin.TexC), awesomefaceTex.Sample(gsamLinear, pin.TexC), 0.2);
 }
 
 

@@ -52,6 +52,8 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> mInputLayout;
 
 	ComPtr<ID3D12PipelineState> mPSO = nullptr;
+
+	UINT srvDescriptorSize;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -139,7 +141,7 @@ void textures_combined::Draw(const GameTimer& gt)
 	mCommandList->SetDescriptorHeaps(1, mSrvDescriptorHeap.GetAddressOf());
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	D3D12_GPU_DESCRIPTOR_HANDLE tex = mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	mCommandList->SetGraphicsRootDescriptorTable(0, tex);
 
 	mCommandList->RSSetViewports(1, &mScreenViewport);
@@ -195,6 +197,10 @@ void textures_combined::LoadTextures()
 	
 	if(S_OK == textureLoader->LoadTextureFromFile(md3dDevice.Get(), mCommandList.Get(), (L"../../../resources/textures/awesomeface.png"), &pLoadedTexture, &srv_desc))
 	{
+		mTextures["awesomeface"] = Texture{ pLoadedTexture, srv_desc };
+	}
+	if (S_OK == textureLoader->LoadTextureFromFile(md3dDevice.Get(), mCommandList.Get(), (L"../../../resources/textures/container.jpg"), &pLoadedTexture, &srv_desc))
+	{
 		mTextures["container"] = Texture{ pLoadedTexture, srv_desc };
 	}
 }
@@ -202,7 +208,7 @@ void textures_combined::LoadTextures()
 void textures_combined::BuildRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0);
 
 	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
 
@@ -237,14 +243,18 @@ void textures_combined::BuildRootSignature()
 void textures_combined::BuildDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.NumDescriptors = 2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
 
-	auto container = mTextures["container"];
+	auto awesomeface = mTextures["awesomeface"];
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-	
+	md3dDevice->CreateShaderResourceView(awesomeface.resource.Get(), &awesomeface.srv_desc, hDescriptor);
+
+	auto container = mTextures["container"];
+	srvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	hDescriptor.ptr += srvDescriptorSize;
 	md3dDevice->CreateShaderResourceView(container.resource.Get(), &container.srv_desc, hDescriptor);
 }
 
